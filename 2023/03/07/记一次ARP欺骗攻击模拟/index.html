@@ -8,12 +8,12 @@
   <link rel="dns-prefetch" href="http://example.com">
   <title>记一次简单的ARP欺骗攻击模拟 | 7412&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="1.初始win7 ARP对应表  2.对攻击目标进行选取1）win7 ip  2）启动ettercap，进行攻击ettercap -G     搜索主机，并查看主机列表   进行ARP欺骗，即ARP poisoning   运行成功后，MAC地址被篡改   3.截取目标主机账户密码">
+  <meta name="description" content="维基百科给出ARP欺骗（英语：ARP spoofing），又称ARP毒化（ARP poisoning，网络上多译为ARP病毒）或ARP攻击，是针对以太网地址解析协议（ARP）的一种攻击技术。此种攻击可让攻击者获取局域网上的数据包甚至可篡改数据包，且可让网络上特定电脑或所有电脑无法正常连线。最早探讨ARP欺骗的文章是由Yuri Volobuev所写的《ARP与ICMP转向游戏》（ARP and IC">
 <meta property="og:type" content="article">
 <meta property="og:title" content="记一次简单的ARP欺骗攻击模拟">
 <meta property="og:url" content="http://example.com/2023/03/07/%E8%AE%B0%E4%B8%80%E6%AC%A1ARP%E6%AC%BA%E9%AA%97%E6%94%BB%E5%87%BB%E6%A8%A1%E6%8B%9F/index.html">
 <meta property="og:site_name" content="7412&#39;s Blog">
-<meta property="og:description" content="1.初始win7 ARP对应表  2.对攻击目标进行选取1）win7 ip  2）启动ettercap，进行攻击ettercap -G     搜索主机，并查看主机列表   进行ARP欺骗，即ARP poisoning   运行成功后，MAC地址被篡改   3.截取目标主机账户密码">
+<meta property="og:description" content="维基百科给出ARP欺骗（英语：ARP spoofing），又称ARP毒化（ARP poisoning，网络上多译为ARP病毒）或ARP攻击，是针对以太网地址解析协议（ARP）的一种攻击技术。此种攻击可让攻击者获取局域网上的数据包甚至可篡改数据包，且可让网络上特定电脑或所有电脑无法正常连线。最早探讨ARP欺骗的文章是由Yuri Volobuev所写的《ARP与ICMP转向游戏》（ARP and IC">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/LYN2784/BlogImage@main/img/image-20230307210425850.png">
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/LYN2784/BlogImage@main/img/image-20230307213110377.png">
@@ -24,7 +24,7 @@
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/LYN2784/BlogImage@main/img/image-20230307212917463.png">
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/LYN2784/BlogImage@main/img/image-20230307213601599.png">
 <meta property="article:published_time" content="2023-03-07T13:43:21.000Z">
-<meta property="article:modified_time" content="2023-03-15T13:36:25.064Z">
+<meta property="article:modified_time" content="2023-03-15T13:42:53.319Z">
 <meta property="article:tag" content="网络安全">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/LYN2784/BlogImage@main/img/image-20230307210425850.png">
@@ -183,8 +183,19 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <span id="more"></span>
+        <p>维基百科给出<strong>ARP欺骗</strong>（英语：<strong>ARP spoofing</strong>），又称<strong>ARP毒化</strong>（<strong>ARP poisoning</strong>，网络上多译为<strong>ARP病毒</strong>）或<strong>ARP攻击</strong>，是针对<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E4%B9%99%E5%A4%AA%E7%B6%B2%E8%B7%AF">以太网</a><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E5%9C%B0%E5%9D%80%E8%A7%A3%E6%9E%90%E5%8D%8F%E8%AE%AE">地址解析协议</a>（<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/ARP">ARP</a>）的一种攻击技术。此种攻击可让攻击者获取<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E5%8D%80%E5%9F%9F%E7%B6%B2%E8%B7%AF">局域网</a>上的数据包甚至可篡改数据包，且可让网络上特定电脑或所有电脑无法正常连线。最早探讨ARP欺骗的文章是由Yuri Volobuev所写的《ARP与ICMP转向游戏》（<em>ARP and ICMP redirection games</em>）</p>
+<span id="more"></span>
 
+<p><strong>简单案例分析</strong>：这里用一个最简单的案例来说明ARP欺骗的核心步骤。假设在一个LAN里，只有三台主机A、B、C，且C是攻击者。</p>
+<ol>
+<li>攻击者聆听局域网上的MAC地址。它只要收到两台主机洪泛的ARP Request，就可以进行欺骗活动。</li>
+<li>主机A、B都洪泛了ARP Request.攻击者现在有了两台主机的IP、MAC地址，开始攻击。</li>
+<li>攻击者发送一个ARP Reply给主机B，把此包protocol header里的sender IP设为A的IP地址，sender mac设为攻击者自己的MAC地址。</li>
+<li>主机B收到ARP Reply后，更新它的ARP表，把主机A的MAC地址（$$IP_A, MAC_A$$）改为（$IP_A, MAC_C$）。</li>
+<li>当主机B要发送数据包给主机A时，它根据ARP表来封装数据包的Link报头，把目的MAC地址设为$MAC_C$，而非$MAC_A$。</li>
+<li>当交换机收到B发送给A的数据包时，根据此包的目的MAC地址（$MAC_C$）而把数据包转发给攻击者C。</li>
+<li>攻击者收到数据包后，可以把它存起来后再发送给A，达到偷听效果。攻击者也可以篡改数据后才发送数据包给A，造成伤害</li>
+</ol>
 <h3 id="1-初始win7-ARP对应表"><a href="#1-初始win7-ARP对应表" class="headerlink" title="1.初始win7 ARP对应表"></a>1.初始win7 ARP对应表</h3><img src="https://cdn.jsdelivr.net/gh/LYN2784/BlogImage@main/img/image-20230307210425850.png" alt="image-20230307210425850" style="zoom:67%;" />
 
 <h3 id="2-对攻击目标进行选取"><a href="#2-对攻击目标进行选取" class="headerlink" title="2.对攻击目标进行选取"></a>2.对攻击目标进行选取</h3><h4 id="1）win7-ip"><a href="#1）win7-ip" class="headerlink" title="1）win7 ip"></a>1）win7 ip</h4><img src="https://cdn.jsdelivr.net/gh/LYN2784/BlogImage@main/img/image-20230307213110377.png" alt="image-20230307213110377" style="zoom:67%;" />
